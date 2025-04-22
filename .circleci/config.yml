@@ -1,54 +1,25 @@
 version: 2.1
+executors:
+  ios-executor:
+    macos:
+      xcode: "14.0.0"
+    working_directory: ~/project
 jobs:
-  test:
-    docker:
-      - image: cimg/base:stable
+  build-ios:
+    executor: ios-executor
     steps:
       - checkout
       - run:
-          name: Run tests
-          command: echo 'replace me with real tests!' && false
-  build:
-    docker:
-      - image: cimg/base:stable
-    steps:
-      - checkout
+          name: Install Bundler
+          command: gem install bundler
       - run:
-          name: Build an artifact
-          command: touch example.txt
-      - store_artifacts:
-          path: example.txt
-  deploy:
-    docker:
-      - image: cimg/base:stable
-    steps:
+          name: Install Fastlane
+          command: bundle install
       - run:
-          name: deploy
-          command: "#e.g. ./deploy.sh"
-  evals-test-assertions-job:
-    docker:
-      - image: cimg/base:stable
-    steps:
-      - checkout
-      - evals/test:
-          assertions: assertions.json
-          metrics: eval_results.json
-          results: test_results.xml
+          name: Run Fastlane
+          command: bundle exec fastlane ios build
 workflows:
-  example:
+  version: 2
+  build:
     jobs:
-      - test:
-          context: []
-      - build:
-          requires:
-            - test
-          context: []
-      - deploy:
-          requires:
-            - test
-          context: []
-  test-eval-workflow:
-    jobs:
-      - evals-test-assertions-job
-orbs:
-  evals: circleci/evals@2.0
+      - build-ios
